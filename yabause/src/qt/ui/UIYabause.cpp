@@ -1128,70 +1128,79 @@ void UIYabause::breakpointHandlerSCSPDSP()
 
 void UIYabause::on_aViewDebugMSH2_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIDebugSH2( UIDebugCPU::PROC_MSH2, mYabauseThread, this ).exec();
+	//YabauseLocker locker( mYabauseThread );
+	UIDebugSH2 *dialog = new UIDebugSH2( UIDebugCPU::PROC_MSH2, mYabauseThread, this );
+	dialog->show();
 }
 
 void UIYabause::on_aViewDebugSSH2_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIDebugSH2( UIDebugCPU::PROC_SSH2, mYabauseThread, this ).exec();
+	//YabauseLocker locker( mYabauseThread );
+	UIDebugSH2 *dialog = new UIDebugSH2( UIDebugCPU::PROC_SSH2, mYabauseThread, this );
+	dialog->show();
 }
 
 void UIYabause::on_aViewDebugVDP1_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIDebugVDP1( this ).exec();
+	//YabauseLocker locker( mYabauseThread );
+	UIDebugVDP1 *dialog = new UIDebugVDP1( this );
+	dialog->show();
 }
 
 void UIYabause::on_aViewDebugVDP2_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIDebugVDP2( this ).exec();
+	//YabauseLocker locker( mYabauseThread );
+	UIDebugVDP2 *dialog = new UIDebugVDP2( this );
+	dialog->show();
 }
 
 void UIYabause::on_aViewDebugM68K_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIDebugM68K( mYabauseThread, this ).exec();
+	//YabauseLocker locker( mYabauseThread );
+	UIDebugM68K *dialog = new UIDebugM68K( mYabauseThread, this );
+	dialog->show();
 }
 
 void UIYabause::on_aViewDebugSCUDSP_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIDebugSCUDSP( mYabauseThread, this ).exec();
+	//YabauseLocker locker( mYabauseThread );
+	UIDebugSCUDSP *dialog = new UIDebugSCUDSP( mYabauseThread, this );
+	dialog->show();
 }
 
 void UIYabause::on_aViewDebugSCSP_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIDebugSCSP( this ).exec();
+	//YabauseLocker locker( mYabauseThread );
+	UIDebugSCSP *dialog = new UIDebugSCSP( this );
+	dialog->show();
 }
 
 void UIYabause::on_aViewDebugSCSPChan_triggered()
 {
-   if (use_new_scsp)
-      UIDebugSCSPChan(this).exec();
-   else
+   if (use_new_scsp) {
+      UIDebugSCSPChan *dialog = new UIDebugSCSPChan(this);
+      dialog->show();
+   } else {
       CommonDialogs::information( QtYabause::translate( "Only available with new scsp code(USE_NEW_SCSP=1)" ) );
+   }
 }
 
 void UIYabause::on_aViewDebugSCSPDSP_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIDebugSCSPDSP( mYabauseThread, this ).exec();
+	UIDebugSCSPDSP *dialog = new UIDebugSCSPDSP( mYabauseThread, this );
+	dialog->show();
 }
 
 void UIYabause::on_aViewDebugSH1_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIDebugSH2( UIDebugCPU::PROC_SH1, mYabauseThread, this ).exec();
+	UIDebugSH2 *dialog = new UIDebugSH2( UIDebugCPU::PROC_SH1, mYabauseThread, this );
+	dialog->show();
 }
 
 void UIYabause::on_aViewDebugMemoryEditor_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIMemoryEditor( UIDebugCPU::PROC_MSH2, mYabauseThread, this ).exec();
+	UIMemoryEditor *dialog = new UIMemoryEditor( UIDebugCPU::PROC_MSH2, mYabauseThread, this );
+	dialog->show();
 }
 
 void UIYabause::on_aTraceLogging_triggered( bool toggled )
