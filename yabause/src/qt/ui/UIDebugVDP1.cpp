@@ -21,6 +21,7 @@
 
 #include <QImageWriter>
 #include <QGraphicsPixmapItem>
+#include <QTimer>
 
 UIDebugVDP1::UIDebugVDP1( QWidget* p )
 	: QDialog( p )
@@ -28,37 +29,23 @@ UIDebugVDP1::UIDebugVDP1( QWidget* p )
 	// setup dialog
 	setupUi( this );
 
-   QGraphicsScene *scene=new QGraphicsScene(this);
-   gvTexture->setScene(scene);
+      QGraphicsScene *scene=new QGraphicsScene(this);
+      gvTexture->setScene(scene);
 
-   lwCommandList->clear();
-
-   if (Vdp1Ram)
-   {
-      for (int i=0;;i++)
-      {
-         char outstring[256];
-
-         Vdp1DebugGetCommandNumberName(i, outstring);
-         if (*outstring == '\0')
-            break;
-
-         lwCommandList->addItem(QtYabause::translate(outstring));
-      }
-   }
-
-   vdp1texture = NULL;
-   vdp1texturew = vdp1textureh = 1;
-   pbSaveBitmap->setEnabled(vdp1texture ? true : false);
-
-	// retranslate widgets
+      // retranslate widgets
 	QtYabause::retranslateWidget( this );
+
+      // Update list asyncronously
+      timer = new QTimer(this);
+      connect(timer, SIGNAL(timeout()), this, SLOT(UpdateList()));
+      timer->setTimerType(Qt::PreciseTimer);
+      timer->start(16);
+      
 }
 
 UIDebugVDP1::~UIDebugVDP1()
 {
-   if (vdp1texture)
-      free(vdp1texture);
+   if (vdp1texture) free(vdp1texture);
 }
 
 void UIDebugVDP1::on_lwCommandList_itemSelectionChanged ()
@@ -108,4 +95,24 @@ void UIDebugVDP1::on_pbSaveBitmap_clicked ()
 	if ( !s.isEmpty() )
 		if ( !img.save( s ) )
 			CommonDialogs::information( QtYabause::translate( "An error occured while writing file." ) );
+}
+
+void UIDebugVDP1::UpdateList()
+{
+      lwCommandList->clear();
+
+      if (Vdp1Ram) {
+            for (int i=0;;i++) {
+                  char outstring[256];
+
+                  Vdp1DebugGetCommandNumberName(i, outstring);
+                  if (*outstring == '\0') break;
+
+                  lwCommandList->addItem(QtYabause::translate(outstring));
+            }
+      }
+
+      vdp1texture = NULL;
+      vdp1texturew = vdp1textureh = 1;
+      pbSaveBitmap->setEnabled(vdp1texture ? true : false);
 }

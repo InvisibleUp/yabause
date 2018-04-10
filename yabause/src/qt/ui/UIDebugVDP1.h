@@ -21,6 +21,7 @@
 
 #include "ui_UIDebugVDP1.h"
 #include "../QtYabause.h"
+#include <QTimer>
 
 class UIDebugVDP1 : public QDialog, public Ui::UIDebugVDP1
 {
@@ -30,12 +31,14 @@ public:
 	~UIDebugVDP1();
 
 protected:
-   u32 *vdp1texture;
-   int vdp1texturew, vdp1textureh;
+	u32 *vdp1texture;
+	int vdp1texturew, vdp1textureh;
+	QTimer *timer;
 
 protected slots:
-   void on_lwCommandList_itemSelectionChanged ();
-   void on_pbSaveBitmap_clicked ();
+	void on_lwCommandList_itemSelectionChanged ();
+	void on_pbSaveBitmap_clicked ();
+	void UpdateList();
 
 };
 

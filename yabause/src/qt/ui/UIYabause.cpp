@@ -1128,49 +1128,42 @@ void UIYabause::breakpointHandlerSCSPDSP()
 
 void UIYabause::on_aViewDebugMSH2_triggered()
 {
-	//YabauseLocker locker( mYabauseThread );
 	UIDebugSH2 *dialog = new UIDebugSH2( UIDebugCPU::PROC_MSH2, mYabauseThread, this );
 	dialog->show();
 }
 
 void UIYabause::on_aViewDebugSSH2_triggered()
 {
-	//YabauseLocker locker( mYabauseThread );
 	UIDebugSH2 *dialog = new UIDebugSH2( UIDebugCPU::PROC_SSH2, mYabauseThread, this );
 	dialog->show();
 }
 
 void UIYabause::on_aViewDebugVDP1_triggered()
 {
-	//YabauseLocker locker( mYabauseThread );
 	UIDebugVDP1 *dialog = new UIDebugVDP1( this );
 	dialog->show();
 }
 
 void UIYabause::on_aViewDebugVDP2_triggered()
 {
-	//YabauseLocker locker( mYabauseThread );
 	UIDebugVDP2 *dialog = new UIDebugVDP2( this );
 	dialog->show();
 }
 
 void UIYabause::on_aViewDebugM68K_triggered()
 {
-	//YabauseLocker locker( mYabauseThread );
 	UIDebugM68K *dialog = new UIDebugM68K( mYabauseThread, this );
 	dialog->show();
 }
 
 void UIYabause::on_aViewDebugSCUDSP_triggered()
 {
-	//YabauseLocker locker( mYabauseThread );
 	UIDebugSCUDSP *dialog = new UIDebugSCUDSP( mYabauseThread, this );
 	dialog->show();
 }
 
 void UIYabause::on_aViewDebugSCSP_triggered()
 {
-	//YabauseLocker locker( mYabauseThread );
 	UIDebugSCSP *dialog = new UIDebugSCSP( this );
 	dialog->show();
 }
@@ -1219,8 +1212,8 @@ void UIYabause::on_aHelpCompatibilityList_triggered()
 
 void UIYabause::on_aHelpAbout_triggered()
 {
-	YabauseLocker locker( mYabauseThread );
-	UIAbout( window() ).exec();
+	UIAbout *dialog = new UIAbout( window() );
+	dialog->open();
 }
 
 void UIYabause::on_aSound_triggered()
