@@ -89,6 +89,23 @@ typedef struct
    void(*Vdp2DispOff)(void);
 } VideoInterface_struct;
 
+typedef union _COLOR { // xbgr x555
+	struct {
+#ifdef WORDS_BIGENDIAN
+	u16 x:1;
+	u16 b:5;
+	u16 g:5;
+	u16 r:5;
+#else
+     u16 r:5;
+     u16 g:5;
+     u16 b:5;
+     u16 x:1;
+#endif
+	};
+	u16 value;
+} COLOR;
+
 extern VideoInterface_struct *VIDCore;
 extern VideoInterface_struct VIDDummy;
 
@@ -184,6 +201,8 @@ int Vdp1LoadState(FILE *fp, int version, int size);
 void Vdp1DebugGetCommandNumberName(u32 number, char *outstring);
 void Vdp1DebugCommand(u32 number, char *outstring);
 u32 *Vdp1DebugTexture(u32 number, int *w, int *h);
+u32 *Vdp1DebugGouraudOverlay(u32 number, int w, int h);
+u32 Vdp1DebugGouraudPoint(int x, int y, int w, int h, COLOR *colors);
 void ToggleVDP1(void);
 
 void VideoDisableGL(void);

@@ -29,11 +29,18 @@ UIDebugVDP1::UIDebugVDP1( QWidget* p )
 	// setup dialog
 	setupUi( this );
 
-      QGraphicsScene *scene=new QGraphicsScene(this);
-      gvTexture->setScene(scene);
+      QGraphicsScene *texscene=new QGraphicsScene(this);
+      gvTexture->setScene(texscene);
+      QGraphicsScene *grdscene=new QGraphicsScene(this);
+      gvGouraud->setScene(grdscene);
 
       // retranslate widgets
 	QtYabause::retranslateWidget( this );
+
+      // init previews
+      vdp1texture = NULL;
+      vdp1texturew = vdp1textureh = 1;
+      gouraudtexture = NULL;
 
       // Update list asyncronously
       timer = new QTimer(this);
@@ -50,29 +57,48 @@ UIDebugVDP1::~UIDebugVDP1()
 
 void UIDebugVDP1::on_lwCommandList_itemSelectionChanged ()
 {
-   int cursel = lwCommandList->currentRow();
-   char tempstr[1024];
+      // Get selection
+      int cursel = lwCommandList->currentRow();
+      char tempstr[1024];
 
-   Vdp1DebugCommand(cursel, tempstr);
-   pteCommandInfo->clear();
-   pteCommandInfo->appendPlainText(QtYabause::translate(tempstr));
-   pteCommandInfo->moveCursor(QTextCursor::Start);
+      // Print debugging text
+      Vdp1DebugCommand(cursel, tempstr);
+      pteCommandInfo->clear();
+      pteCommandInfo->appendPlainText(QtYabause::translate(tempstr));
+      pteCommandInfo->moveCursor(QTextCursor::Start);
 
-   if (vdp1texture)
-      free(vdp1texture);
+      {
+            // Get texture
+            if (vdp1texture) free(vdp1texture);
+            vdp1texture = Vdp1DebugTexture(cursel, &vdp1texturew, &vdp1textureh);
+            pbSaveBitmap->setEnabled(vdp1texture ? true : false);
 
-   vdp1texture = Vdp1DebugTexture(cursel, &vdp1texturew, &vdp1textureh);
-   pbSaveBitmap->setEnabled(vdp1texture ? true : false);
+            // Redraw texture
+            QGraphicsScene *scene = gvTexture->scene();
+            QImage img((uchar *)vdp1texture, vdp1texturew, vdp1textureh, QImage::Format_ARGB32);
+            QPixmap pixmap = QPixmap::fromImage(img.rgbSwapped());
+            scene->clear();
+            scene->addPixmap(pixmap);
+            scene->setSceneRect(scene->itemsBoundingRect());
+            gvTexture->fitInView(scene->sceneRect());
+            gvTexture->invalidateScene();
+      }
 
-   // Redraw texture
-   QGraphicsScene *scene = gvTexture->scene();
-   QImage img((uchar *)vdp1texture, vdp1texturew, vdp1textureh, QImage::Format_ARGB32);
-   QPixmap pixmap = QPixmap::fromImage(img.rgbSwapped());
-   scene->clear();
-   scene->addPixmap(pixmap);
-   scene->setSceneRect(scene->itemsBoundingRect());
-   gvTexture->fitInView(scene->sceneRect());
-   gvTexture->invalidateScene();
+      {
+            // Get gouraud preview
+            if (gouraudtexture) free(gouraudtexture);
+            gouraudtexture = Vdp1DebugGouraudOverlay(cursel, 128, 128);
+
+            // Redraw gouraud preview
+            QGraphicsScene *scene = gvGouraud->scene();
+            QImage img((uchar *)gouraudtexture, 128, 128, QImage::Format_ARGB32);
+            QPixmap pixmap = QPixmap::fromImage(img.rgbSwapped());
+            scene->clear();
+            scene->addPixmap(pixmap);
+            scene->setSceneRect(scene->itemsBoundingRect());
+            gvGouraud->fitInView(scene->sceneRect());
+            gvGouraud->invalidateScene();
+      }
 }
 
 void UIDebugVDP1::on_pbSaveBitmap_clicked ()
@@ -85,8 +111,8 @@ void UIDebugVDP1::on_pbSaveBitmap_clicked ()
 		filters[i] = QtYabause::translate( "%1 Images (*.%2)" ).arg( filters[i].toUpper() ).arg( filters[i] );
 	
 	// take screenshot of gl view
-   QImage img((uchar *)vdp1texture, vdp1texturew, vdp1textureh, QImage::Format_ARGB32);
-   img = img.rgbSwapped();
+      QImage img((uchar *)vdp1texture, vdp1texturew, vdp1textureh, QImage::Format_ARGB32);
+      img = img.rgbSwapped();
 	
 	// request a file to save to to user
 	const QString s = CommonDialogs::getSaveFileName( QString(), QtYabause::translate( "Choose a location for your bitmap" ), filters.join( ";;" ) );
@@ -97,22 +123,21 @@ void UIDebugVDP1::on_pbSaveBitmap_clicked ()
 			CommonDialogs::information( QtYabause::translate( "An error occured while writing file." ) );
 }
 
+// Populate command list
+// TODO: Seperate all this into different comboboxes and stuff
 void UIDebugVDP1::UpdateList()
-{
+{ 
       lwCommandList->clear();
-
       if (Vdp1Ram) {
             for (int i=0;;i++) {
+                  // Get command type
                   char outstring[256];
-
                   Vdp1DebugGetCommandNumberName(i, outstring);
                   if (*outstring == '\0') break;
 
+                  // Add to command list
                   lwCommandList->addItem(QtYabause::translate(outstring));
             }
       }
-
-      vdp1texture = NULL;
-      vdp1texturew = vdp1textureh = 1;
       pbSaveBitmap->setEnabled(vdp1texture ? true : false);
 }

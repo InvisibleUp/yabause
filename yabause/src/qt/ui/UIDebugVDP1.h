@@ -31,7 +31,7 @@ public:
 	~UIDebugVDP1();
 
 protected:
-	u32 *vdp1texture;
+	u32 *vdp1texture, *gouraudtexture;
 	int vdp1texturew, vdp1textureh;
 	QTimer *timer;
 

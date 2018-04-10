@@ -2982,23 +2982,6 @@ static INLINE double interpolate(double start, double end, int numberofsteps) {
 	return stepvalue;
 }
 
-typedef union _COLOR { // xbgr x555
-	struct {
-#ifdef WORDS_BIGENDIAN
-	u16 x:1;
-	u16 b:5;
-	u16 g:5;
-	u16 r:5;
-#else
-     u16 r:5;
-     u16 g:5;
-     u16 b:5;
-     u16 x:1;
-#endif
-	};
-	u16 value;
-} COLOR;
-
 COLOR gouraudA;
 COLOR gouraudB;
 COLOR gouraudC;

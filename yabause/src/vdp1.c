@@ -1099,6 +1099,7 @@ void Vdp1DebugCommand(u32 number, char *outstring)
          case 4:
             AddString(outstring, "Gouraud Shading\r\n");
             AddString(outstring, "Gouraud Shading Table = %08X\r\n", ((unsigned int)cmd.CMDGRDA) << 3);
+            AddString(outstring, "Gouraud R = %X\r\n", Vdp1Ram[((unsigned int)cmd.CMDGRDA) << 3]);
             break;
          case 6:
             AddString(outstring, "Gouraud Shading + Half-luminance\r\n");
@@ -1479,6 +1480,76 @@ u32 *Vdp1DebugTexture(u32 number, int *w, int *h)
    }
 
    return texture;
+}
+
+u32 Vdp1DebugGouraudPoint(int x, int y, int w, int h, COLOR *colors){
+      float uvx = (w - x)/w;
+      float uvy = (h - y)/h;
+
+      u8 r = (colors[0].r * (1.0-uvx) * uvy)
+           + (colors[1].r * uvx * uvy)
+           + (colors[2].r * (1.0-uvx) * (1.0-uvy))
+           + (colors[3].r * uvx * (1.0-uvy));
+
+      u8 g = (colors[0].g * (1.0-uvx) * uvy)
+           + (colors[1].g * uvx * uvy)
+           + (colors[2].g * (1.0-uvx) * (1.0-uvy))
+           + (colors[3].g * uvx * (1.0-uvy));
+
+      u8 b = (colors[0].g * (1.0-uvx) * uvy)
+           + (colors[1].g * uvx * uvy)
+           + (colors[2].g * (1.0-uvx) * (1.0-uvy))
+           + (colors[3].g * uvx * (1.0-uvy));
+
+      return (0xffu << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+}
+
+u32 *Vdp1DebugGouraudOverlay(u32 number, int w, int h)
+{
+      u16 command;
+      vdp1cmd_struct cmd;
+      u32 addr;
+      u32 *texture;
+      u32 gouraudAddr;
+      COLOR colors[4];
+      int x, y;
+
+      addr = Vdp1DebugGetCommandNumberAddr(number);
+      if (addr == 0xFFFFFFFF) return NULL;
+
+      command = T1ReadWord(Vdp1Ram, addr);
+      if (command & 0x8000) return NULL; // Draw End
+      if (command & 0x4000) return NULL; // Command Skipped
+
+      Vdp1ReadCommand(&cmd, addr, Vdp1Ram);
+
+      switch (cmd.CMDPMOD & 0x7)
+      {
+            case 4:
+            case 6:
+            case 7:
+                  gouraudAddr = ((unsigned int)cmd.CMDGRDA) << 3;
+                  texture = (u32 *)malloc(sizeof(u32) * w * h);
+                  if(!texture) return NULL;
+                  break;
+            default: 
+                  return NULL;
+      }
+
+      // Get colors in usable format
+      colors[0].value = T1ReadWord(Vdp1Ram, gouraudAddr);
+      colors[1].value = T1ReadWord(Vdp1Ram, gouraudAddr + 2);
+      colors[2].value = T1ReadWord(Vdp1Ram, gouraudAddr + 4);
+      colors[3].value = T1ReadWord(Vdp1Ram, gouraudAddr + 6);
+
+      // Populate (this is basically a shader)
+      for(x = 0; x < w; x++){
+            for(y = 0; y < h; y++){
+                  texture[x + y*w] = Vdp1DebugGouraudPoint(x, y, w, h, colors);
+            }
+      }
+
+      return texture;
 }
 
 //////////////////////////////////////////////////////////////////////////////
