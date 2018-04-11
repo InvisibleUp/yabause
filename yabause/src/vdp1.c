@@ -1099,7 +1099,6 @@ void Vdp1DebugCommand(u32 number, char *outstring)
          case 4:
             AddString(outstring, "Gouraud Shading\r\n");
             AddString(outstring, "Gouraud Shading Table = %08X\r\n", ((unsigned int)cmd.CMDGRDA) << 3);
-            AddString(outstring, "Gouraud R = %X\r\n", Vdp1Ram[((unsigned int)cmd.CMDGRDA) << 3]);
             break;
          case 6:
             AddString(outstring, "Gouraud Shading + Half-luminance\r\n");
@@ -1486,20 +1485,26 @@ u32 Vdp1DebugGouraudPoint(int x, int y, int w, int h, COLOR *colors){
       float uvx = (w - x)/w;
       float uvy = (h - y)/h;
 
-      u8 r = (colors[0].r * (1.0-uvx) * uvy)
+      u8 r = ((colors[0].r * (1.0-uvx) * uvy)
            + (colors[1].r * uvx * uvy)
            + (colors[2].r * (1.0-uvx) * (1.0-uvy))
-           + (colors[3].r * uvx * (1.0-uvy));
+           + (colors[3].r * uvx * (1.0-uvy))) * 8;
 
-      u8 g = (colors[0].g * (1.0-uvx) * uvy)
+      u8 g = ((colors[0].g * (1.0-uvx) * uvy)
            + (colors[1].g * uvx * uvy)
            + (colors[2].g * (1.0-uvx) * (1.0-uvy))
-           + (colors[3].g * uvx * (1.0-uvy));
+           + (colors[3].g * uvx * (1.0-uvy))) * 8;
 
-      u8 b = (colors[0].g * (1.0-uvx) * uvy)
+      u8 b = ((colors[0].g * (1.0-uvx) * uvy)
            + (colors[1].g * uvx * uvy)
            + (colors[2].g * (1.0-uvx) * (1.0-uvy))
-           + (colors[3].g * uvx * (1.0-uvy));
+           + (colors[3].g * uvx * (1.0-uvy))) * 8;
+
+      if(x == 0 & y == 0){
+            printf("colors[1]: %X\r\n", colors[1].value);
+            printf("colors[1]: %i %i %i\r\n", colors[1].r << 3, colors[1].g << 3, colors[1].b << 3);
+            printf("r: %i, g: %i, b: %i\r\n", r, g, b);
+      }
 
       return (0xffu << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
 }
