@@ -1481,32 +1481,30 @@ u32 *Vdp1DebugTexture(u32 number, int *w, int *h)
    return texture;
 }
 
-u32 Vdp1DebugGouraudPoint(int x, int y, int w, int h, COLOR *colors){
+u32 Vdp1DebugGouraudPoint(int x, int y, int w, int h, COLOR *colors)
+{
       float uvx = (w - x)/w;
       float uvy = (h - y)/h;
 
-      u8 r = ((colors[0].r * (1.0-uvx) * uvy)
-           + (colors[1].r * uvx * uvy)
-           + (colors[2].r * (1.0-uvx) * (1.0-uvy))
-           + (colors[3].r * uvx * (1.0-uvy))) * 8;
+      u8 r_xt = (colors[0].r * (1.0-uvx))
+              + (colors[1].r * uvx);
+      u8 r_xb = (colors[2].r * (1.0-uvx))
+              + (colors[3].r * uvx);
+      u8 r = (r_xt * (1.0-uvy) + r_xb * uvy) * 8;
+      
+      u8 g_xt = (colors[0].g * (1.0-uvx))
+              + (colors[1].g * uvx);
+      u8 g_xb = (colors[2].g * (1.0-uvx))
+              + (colors[3].g * uvx);
+      u8 g = (g_xt * (1.0-uvy) + g_xb * uvy) * 8;
 
-      u8 g = ((colors[0].g * (1.0-uvx) * uvy)
-           + (colors[1].g * uvx * uvy)
-           + (colors[2].g * (1.0-uvx) * (1.0-uvy))
-           + (colors[3].g * uvx * (1.0-uvy))) * 8;
+      u8 b_xt = (colors[0].b * (1.0-uvx))
+              + (colors[1].b * uvx);
+      u8 b_xb = (colors[2].b * (1.0-uvx))
+              + (colors[3].b * uvx);
+      u8 b = (b_xt * (1.0-uvy) + b_xb * uvy) * 8;
 
-      u8 b = ((colors[0].g * (1.0-uvx) * uvy)
-           + (colors[1].g * uvx * uvy)
-           + (colors[2].g * (1.0-uvx) * (1.0-uvy))
-           + (colors[3].g * uvx * (1.0-uvy))) * 8;
-
-      if(x == 0 & y == 0){
-            printf("colors[1]: %X\r\n", colors[1].value);
-            printf("colors[1]: %i %i %i\r\n", colors[1].r << 3, colors[1].g << 3, colors[1].b << 3);
-            printf("r: %i, g: %i, b: %i\r\n", r, g, b);
-      }
-
-      return (0xffu << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+      return (0xffu << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff);
 }
 
 u32 *Vdp1DebugGouraudOverlay(u32 number, int w, int h)
