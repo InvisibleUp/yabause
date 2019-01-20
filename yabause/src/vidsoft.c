@@ -2053,6 +2053,116 @@ static void Vdp2DrawRBG0(Vdp2* lines, Vdp2* regs, u8* ram, u8* color_ram, struct
    Vdp2DrawRotationFP(&info, parameter, lines, regs, ram, color_ram, cell_data);
 }
 
+static void Vdp2DrawRBG0_Debug(Vdp2* lines, Vdp2* regs, u8* ram, u8* color_ram, struct CellScrollData * cell_data)
+{
+   vdp2draw_struct info = { 0 };
+   vdp2rotationparameterfp_struct parameter[2];
+
+   info.titan_which_layer = TITAN_RBG0;
+   info.titan_shadow_enabled = (regs->SDCTL >> 4) & 1;
+
+   parameter[0].PlaneAddr = (void FASTCALL(*)(void *, int, Vdp2*))&Vdp2ParameterAPlaneAddr;
+   parameter[1].PlaneAddr = (void FASTCALL(*)(void *, int, Vdp2*))&Vdp2ParameterBPlaneAddr;
+
+   info.enable = regs->BGON & 0x10;
+   info.priority = regs->PRIR & 0x7;
+   if (!(info.enable & Vdp2External.disptoggle))
+      return;
+   info.transparencyenable = !(regs->BGON & 0x1000);
+   info.specialprimode = (regs->SFPRMD >> 8) & 0x3;
+
+   info.colornumber = (regs->CHCTLB & 0x7000) >> 12;
+
+   // Figure out which Rotation Parameter we're using
+   switch (regs->RPMD & 0x3)
+   {
+      case 0:
+         // Parameter A
+         info.rotatenum = 0;
+         info.rotatemode = 0;
+         info.PlaneAddr = (void FASTCALL(*)(void *, int, Vdp2*))&Vdp2ParameterAPlaneAddr;
+         break;
+      case 1:
+         // Parameter B
+         info.rotatenum = 1;
+         info.rotatemode = 0;
+         info.PlaneAddr = (void FASTCALL(*)(void *, int, Vdp2*))&Vdp2ParameterBPlaneAddr;
+         break;
+      case 2:
+         // Parameter A+B switched via coefficients
+      case 3:
+         // Parameter A+B switched via rotation parameter window
+      default:
+         info.rotatenum = 0;
+         info.rotatemode = 1 + (regs->RPMD & 0x1);
+         info.PlaneAddr = (void FASTCALL(*)(void *, int, Vdp2*))&Vdp2ParameterAPlaneAddr;
+         break;
+   }
+
+   Vdp2ReadRotationTableFP(info.rotatenum, &parameter[info.rotatenum], regs, ram);
+
+   if((info.isbitmap = regs->CHCTLB & 0x200) != 0)
+   {
+      // Bitmap Mode
+      ReadBitmapSize(&info, regs->CHCTLB >> 10, 0x1);
+
+      if (info.rotatenum == 0)
+         // Parameter A
+         info.charaddr = (regs->MPOFR & 0x7) * 0x20000;
+      else
+         // Parameter B
+         info.charaddr = (regs->MPOFR & 0x70) * 0x2000;
+
+      info.paladdr = (regs->BMPNB & 0x7) << 8;
+      info.flipfunction = 0;
+      info.specialfunction = 0;
+      info.specialcolorfunction = (regs->BMPNB & 0x10) >> 4;
+   }
+   else
+   {
+      // Tile Mode
+      info.mapwh = 4;
+
+      if (info.rotatenum == 0)
+         // Parameter A
+         ReadPlaneSize(&info, regs->PLSZ >> 8);
+      else
+         // Parameter B
+         ReadPlaneSize(&info, regs->PLSZ >> 12);
+
+      ReadPatternData(&info, regs->PNCR, regs->CHCTLB & 0x100);
+   }
+
+   if (regs->CCCTL & 0x210)
+      info.alpha = ((~regs->CCRR & 0x1F) << 1) + 1;
+   else
+      info.alpha = 0x3F;
+   if ((regs->CCCTL & 0x210) == 0x210) info.alpha |= 0x80;
+   else if ((regs->CCCTL & 0x110) == 0x110) info.alpha |= 0x80;
+   info.specialcolormode = (regs->SFCCMD >> 8) & 0x3;
+   if (regs->SFSEL & 0x10)
+      info.specialcode = regs->SFCODE >> 8;
+   else
+      info.specialcode = regs->SFCODE & 0xFF;
+   info.linescreen = 0;
+   if (regs->LNCLEN & 0x10)
+      info.linescreen = 1;
+
+   info.coloroffset = (regs->CRAOFB & 0x7) << 8;
+
+   ReadVdp2ColorOffset(regs, &info, 0x10, 0x10);
+   info.coordincx = info.coordincy = 1;
+
+   ReadMosaicData(&info, 0x10, regs);
+   info.islinescroll = 0;
+   info.isverticalscroll = 0;
+   info.wctl = regs->WCTLC;
+
+   info.LoadLineParams = (void(*)(void *, void*, int, Vdp2*)) LoadLineParamsRBG0;
+
+   Vdp2DrawRotationFP(&info, parameter, lines, regs, ram, color_ram, cell_data);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 static void LoadLineParamsSprite(vdp2draw_struct * info, int line, Vdp2* lines)

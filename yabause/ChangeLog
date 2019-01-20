@@ -2,7 +2,7 @@
  qt:
   - Added branding
   - Changed most debug dialogs to not pause emulator
-  - TODO: Added VDP1 gouraud preview in command viewer
+  - Added VDP1 gouraud preview in command viewer
   - TODO: Added VDP1 VRAM viewer
   - TODO: Added VDP2 RBG0/1 tilemap viewer
   - TODO: Added VDP2 NBGx viewer
