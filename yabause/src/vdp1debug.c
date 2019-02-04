@@ -171,66 +171,36 @@ static u32 Vdp1DebugGetCommandNumberAddr(u32 number)
 
 void Vdp1DebugGetCommandNumberName(u32 number, char *outstring)
 {
-   u32 addr;
-   u16 command;
-   char *command_name;
-
+   u32 addr = Vdp1DebugGetCommandNumberAddr(number);
    *outstring = '\0';
 
-   if ((addr = Vdp1DebugGetCommandNumberAddr(number)) != 0xFFFFFFFF)
+   if (addr != 0xFFFFFFFF)
    {
-      command = T1ReadWord(Vdp1Ram, addr);
+      char * command_name_list[] = {
+         "Normal Sprite",
+         "Scaled Sprite",
+         "Distorted Sprite",
+         "Distorted Sprite *",
+         "Polygon",
+         "Polyline",
+         "Line",
+         "Polyline *",
+         "User Clipping Coordinates",
+         "System Clipping Coordinates",
+         "Local Coordinates",
+         "User Clipping Coordinates *"
+      };
+      char *command_name;
+      u16 command = T1ReadWord(Vdp1Ram, addr);
 
       if (command & 0x8000) {
          outstring = "Draw End";
-         return;
+      } else if (command > 11) {
+         outstring = "Bad Command";
+      } else {
+         command_name = command_name_list[command];
+         sprintf(outstring, "%03u %s", number, command_name);
       }
-
-      // Figure out command name
-      switch (command & 0x000F)
-      {
-         case 0:
-            command_name = "Normal Sprite";
-            break;
-         case 1:
-            command_name = "Scaled Sprite";
-            break;
-         case 2:
-            command_name = "Distorted Sprite";
-            break;
-         case 3:
-            command_name = "Distorted Sprite *";
-            break;
-         case 4:
-            command_name = "Polygon";
-            break;
-         case 5:
-            command_name = "Polyline";
-            break;
-         case 6:
-            command_name = "Line";
-            break;
-         case 7:
-            command_name = "Polyline *";
-            break;
-         case 8:
-            command_name = "User Clipping Coordinates";
-            break;
-         case 9:
-            command_name = "System Clipping Coordinates";
-            break;
-         case 10:
-            command_name = "Local Coordinates";
-            break;
-         case 11:
-            command_name = "User Clipping Coordinates *";
-            break;
-         default:
-            outstring = "Bad command";
-            return;
-      }
-
-      sprintf(outstring, "%03u %s", number, command_name);
    }
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -239,9 +209,9 @@ void Vdp1DebugCommand(u32 number, char *outstring)
 {
    u16 command;
    vdp1cmd_struct cmd;
-   u32 addr;
+   u32 addr = Vdp1DebugGetCommandNumberAddr(number);
 
-   if ((addr = Vdp1DebugGetCommandNumberAddr(number)) == 0xFFFFFFFF)
+   if (addr == 0xFFFFFFFF)
       return;
 
    command = T1ReadWord(Vdp1Ram, addr);
