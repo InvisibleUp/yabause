@@ -198,11 +198,6 @@ void FASTCALL Vdp1ReadCommand(vdp1cmd_struct *cmd, u32 addr, u8* ram);
 int Vdp1SaveState(FILE *fp);
 int Vdp1LoadState(FILE *fp, int version, int size);
 
-void Vdp1DebugGetCommandNumberName(u32 number, char *outstring);
-void Vdp1DebugCommand(u32 number, char *outstring);
-u32 *Vdp1DebugTexture(u32 number, int *w, int *h);
-u32 *Vdp1DebugGouraudOverlay(u32 number, int w, int h);
-u32 Vdp1DebugGouraudPoint(int x, int y, int w, int h, COLOR *colors);
 void ToggleVDP1(void);
 
 void VideoDisableGL(void);

@@ -21,6 +21,7 @@
 #include "yuiviewer.h"
 #include "yuivdp1.h"
 #include "../vdp1.h"
+#include "../vdp1debug.h"
 #include "../yabause.h"
 #include "settings.h"
 
